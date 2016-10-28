@@ -1,91 +1,63 @@
-/*
-var csv = require('csv');
+var fs = require("fs");
 
-var CSV = csv();
+var data = fs.readFileSync("./data/input.csv");
+var temp_data = data.toString();
+var data= temp_data.split('\r\n');
 
-CSV.from.path('/Users/Zuriel/Downloads/maridaje.csv').to.array(function(data){
-	console.log(data);
+
+var character_position = "";
+var foods = "";
+var base_string = "";
+var beer_data = [];
+var temp_data = {};
+var response = [];
+// begin on position number one, because 0 is for header row
+for(position = 1; position < (data.length); position++){
+
+	character_position = (data[position]).indexOf('"');
+
+	if( character_position !== -1 && character_position >= 0 ){
+	
+		base_string = data[position].substring(0,character_position);
+		// check if we need to remove the last character
+		if(base_string.charAt( (base_string.length)-1 ) == ","){
+			base_string = base_string.substring(0,(base_string.length)-1);
+		}
+
+		foods = data[position].substring(character_position);
+		foods = foods.replace(/\"/gi,"");
+		foods = foods.replace(/\'/gi,'"');
+	}
+
+	// check if base_string is not empty
+
+	if(base_string){
+		beer_data = base_string.split(",");
+		temp_data["beer_name"] = beer_data[0];
+		temp_data["beer_name_cleaned"] = beer_data[1];
+		temp_data["beer_img_url"] = beer_data[2];
+		temp_data["foods"] = JSON.parse("["+foods+"]");
+	}
+
+	// add 'temp_data' to response
+	response.push(temp_data);
+}
+
+//console.log(JSON.stringify(response));
+
+// check if file exists, then remove it!
+fs.unlink('./data/maridaje.json', (err) => {
+	if(err) return console.log(err);
+	console.log('successfully deleted "./data/maridaje.json".');
+})
+
+fs.writeFile('./data/maridaje.json', JSON.stringify(response), function (err) {
+  if (err) return console.log(err);
+  console.log('file has been created.');
 });
-*/
-/*
-var fs          = require('fs');
-var csv = require("fast-csv");
-var stream = fs.createReadStream("/Users/Zuriel/Downloads/maridaje.csv");
- 
-var csvStream = csv()
-    .on("data", function(data){
-         console.log(data);
-    })
-    .on("end", function(){
-         console.log("done");
-    });
- 
-stream.pipe(csvStream);
-*/
-
-/*
-var csv = require("fast-csv");
-var fs 	= require("fs");
-
-var stream = fs.createReadStream("/Users/Zuriel/Downloads/maridaje.csv");
-csv
-  .fromStream(stream, {ignoreEmpty: true})
-  .on("data", function(data){
-  	console.log(data);
-  })
-  .on("end",function(){
-  	console.log("done");
-  });
-*/
-
-/*
-
-As ShanShan mentioned you can leverage an external library for this in a real project, but I've made some modifications to your code that should do what you want in case you're doing this as a learning experience.
-
-I've tried to keep the code roughly the same. There are two major changes. First, rather than construct a string with the content I'm creating an object that stores the data that you're interested in for each row. Because this object is on a per-row level, this is in the outer loop that handles rows. Second, I'm stripping out the first and last character of the header and value text (the quotes). Because you're interepreting the CSV as a string and splitting based on that, it still contains the quotes. In the real world you might want to extract this with a regex or a replace function, but I tried to keep it simple so it uses substring instead.
-
-The code below:
-
-var fs = require("fs");
-
-var data = fs.readFileSync('test.csv');
-var stringData=data.toString();
-
-console.log(stringData);
-var arrayOne= stringData.split('\r\n');
-
-var header=arrayOne[0].split(',');
-var noOfRow=arrayOne.length;
-var noOfCol=header.length;
-
-var jArray=[];
-
-var i=0,j=0;
-for (i = 1; i < noOfRow-1; i++) {
-
-    var obj = {};
-    var myNewLine=arrayOne[i].split(',');
-
-    for (j = 0; j< noOfCol; j++) {
-        var headerText = header[j].substring(1,header[j].length-1);
-        var valueText = myNewLine[j].substring(1,myNewLine[j].length-1);
-        obj[headerText] = valueText;
-    };
-    jArray.push(obj);
-};
-
-console.log( jArray);
-
-// another way to convert csv to json
-https://www.npmjs.com/package/csvtojson
-
-*/
-
-var fs = require("fs");
-
-var data = fs.readFileSync("./data/maridaje2.csv");
-var stringData = data.toString();
 
 
 
-console.log(stringData);
+
+
+
